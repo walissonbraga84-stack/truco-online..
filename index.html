@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Truco Online - 4 Jogadores</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+margin:0;
+font-family:Arial,sans-serif;
+background:radial-gradient(circle,#176b3a,#06140b);
+color:white;
+min-height:100vh;
+}
+
+header{
+background:#06110b;
+padding:18px;
+text-align:center;
+border-bottom:3px solid #e0b83f;
+}
+
+h1{margin:0;color:#ffd95a}
+
+#menu,#jogo{
+max-width:1100px;
+margin:auto;
+padding:20px;
+}
+
+.box,.infoBox{
+background:#0d2b19;
+border:2px solid #285a3b;
+border-radius:15px;
+padding:20px;
+margin-bottom:15px;
+}
+
+#menu{text-align:center}
+
+input{
+padding:12px;
+margin:5px;
+border-radius:8px;
+border:1px solid #527c60;
+background:#06150c;
+color:white;
+font-size:16px;
+}
+
+button{
+padding:12px 18px;
+margin:5px;
+border:0;
+border-radius:8px;
+background:#e0b83f;
+color:#171000;
+font-weight:bold;
+cursor:pointer;
+}
+
+button:hover{
+transform:scale(1.04);
+}
+
+#jogo{display:none}
+
+.info{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+}
+
+.info div{
+flex:1;
+min-width:150px;
+background:#0c2918;
+padding:15px;
+border-radius:10px;
+text-align:center;
+}
+
+.mesa{
+position:relative;
+height:650px;
+border:8px solid #58351d;
+border-radius:30px;
+background:radial-gradient(circle,#25834a,#0b4528);
+overflow:hidden;
+}
+
+.jogador{
+position:absolute;
+width:210px;
+text-align:center;
+}
+
+.j1{
+bottom:10px;
+left:50%;
+transform:translateX(-50%);
+}
+
+.j2{
+top:10px;
+left:50%;
+transform:translateX(-50%);
+}
+
+.j3{
+left:10px;
+top:50%;
+transform:translateY(-50%);
+}
+
+.j4{
+right:10px;
+top:50%;
+transform:translateY(-50%);
+}
+
+.nome{
+font-weight:bold;
+font-size:18px;
+}
+
+.cartas{
+display:flex;
+justify-content:center;
+gap:5px;
+margin-top:8px;
+}
+
+.carta{
+width:60px;
+height:90px;
+background:white;
+color:#111;
+border-radius:8px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-weight:bold;
+font-size:20px;
+cursor:pointer;
+box-shadow:0 4px 8px #0008;
+}
+
+.carta:hover{
+transform:translateY(-8px);
+}
+
+.verso{
+background:repeating-linear-gradient(
+45deg,
+#9c1622 0 6px,
+#df4a55 6px 10px
+);
+color:transparent;
+}
+
+.centro{
+position:absolute;
+left:50%;
+top:50%;
+transform:translate(-50%,-50%);
+width:450px;
+max-width:90%;
+text-align:center;
+}
+
+#mensagem{
+min-height:50px;
+color:#ffe58a;
+font-weight:bold;
+font-size:18px;
+}
+
+#mesaCartas{
+display:flex;
+justify-content:center;
+gap:8px;
+flex-wrap:wrap;
+min-height:100px;
+}
+
+.truco{
+background:#c51e2b;
+color:white;
+}
+
+#linkSala{
+display:none;
+margin-top:15px;
+}
+
+#linkSala input{
+width:80%;
+}
+
+@media(max-width:700px){
+
+.mesa{
+height:700px;
+}
+
+.jogador{
+width:130px;
+}
+
+.carta{
+width:45px;
+height:70px;
+font-size:14px;
+}
+
+.centro{
+width:90%;
+}
+
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>🃏 TRUCO ONLINE - 4 JOGADORES</h1>
+</header>
+
+<div id="menu">
+
+<div class="box">
+
+<h2>🎮 Criar ou entrar em uma sala</h2>
+
+<input id="nome" placeholder="Seu nome" maxlength="15">
+
+<br>
+
+<input id="codigo" placeholder="Código da sala" maxlength="8">
+
+<br>
+
+<button onclick="criarSala()">🏠 CRIAR SALA</button>
+
+<button onclick="entrarSala()">🚪 ENTRAR NA SALA</button>
+
+<div id="linkSala">
+
+<p>🔗 Link da sala:</p>
+
+<input id="link" readonly>
+
+<br>
+
+<button onclick="copiarLink()">📋 COPIAR LINK</button>
+
+</div>
+
+<p id="status">
+Digite seu nome e crie uma sala.
+</p>
+
+</div>
+
+</div>
+
+<div id="jogo">
+
+<div class="info">
+
+<div>
+🟢 Time 1<br>
+<strong id="pontos1">0</strong>
+</div>
+
+<div>
+🔴 Time 2<br>
+<strong id="pontos2">0</strong>
+</div>
+
+<div>
+🔥 Valor<br>
+<strong id="valor">1</strong>
+</div>
+
+<div>
+🎯 Vez<br>
+<strong id="vez">Jogador 1</strong>
+</div>
+
+</div>
+
+<div class="mesa">
+
+<div class="jogador j1">
+
+<div class="nome" id="nome1">
+Jogador 1
+</div>
+
+<div class="cartas" id="cartas1"></div>
+
+</div>
+
+<div class="jogador j2">
+
+<div class="nome" id="nome2">
+Jogador 2
+</div>
+
+<div class="cartas" id="cartas2"></div>
+
+</div>
+
+<div class="jogador j3">
+
+<div class="nome" id="nome3">
+Jogador 3
+</div>
+
+<div class="cartas" id="cartas3"></div>
+
+</div>
+
+<div class="jogador j4">
+
+<div class="nome" id="nome4">
+Jogador 4
+</div>
+
+<div class="cartas" id="cartas4"></div>
+
+</div>
+
+<div class="centro">
+
+<div id="mensagem">
+Aguardando partida...
+</div>
+
+<div id="mesaCartas"></div>
+
+<br>
+
+<button onclick="truco()" class="truco">
+🔥 TRUCO
+</button>
+
+<button onclick="iniciarPartida()">
+▶ INICIAR
+</button>
+
+<button onclick="novaRodada()">
+🔄 NOVA RODADA
+</button>
+
+</div>
+
+</div>
+
+<div class="infoBox">
+
+Sala:
+
+<strong id="salaAtual">---</strong>
+
+</div>
+
+</div>
+
+<script>
+
+let sala="";
+let jogadorAtual=0;
+let partida=false;
+let valor=1;
+
+let pontos=[
+0,
+0
+];
+
+let vez=0;
+
+let cartasJogadores=[
+[],
+[],
+[],
+[]
+];
+
+let cartasMesa=[];
+
+let nomes=[
+"Jogador 1",
+"Jogador 2",
+"Jogador 3",
+"Jogador 4"
+];
+
+const valores=[
+"4",
+"5",
+"6",
+"7",
+"Q",
+"J",
+"K",
+"A",
+"2",
+"3"
+];
+
+const naipes=[
+"♣",
+"♥",
+"♠",
+"♦"
+];
+
+
+function criarBaralho(){
+
+let baralho=[];
+
+for(let v of valores){
+
+for(let n of naipes){
+
+baralho.push(
+v+n
+);
+
+}
+
+}
+
+return baralho.sort(
+()=>Math.random()-0.5
+);
+
+}
+
+
+function criarSala(){
+
+let nome=
+document.getElementById("nome")
+.value
+.trim();
+
+if(nome===""){
+alert("Digite seu nome.");
+return;
+}
+
+nomes[0]=nome;
+
+sala=
+Math.random()
+.toString(36)
+.substring(2,8)
+.toUpperCase();
+
+document.getElementById("codigo")
+.value=sala;
+
+document.getElementById("salaAtual")
+.innerText=sala;
+
+let url=
+window.location.href
+.split("?")[0]
++
+"?sala="
++
+sala;
+
+document.getElementById("link")
+.value=url;
+
+document.getElementById("linkSala")
+.style.display="block";
+
+document.getElementById("status")
+.innerText=
+"Sala criada! Envie o código para seus amigos.";
+
+localStorage.setItem(
+"truco_sala",
+sala
+);
+
+localStorage.setItem(
+"truco_nome",
+nome
+);
+
+entrarNoJogo();
+
+}
+
+
+function entrarSala(){
+
+let nome=
+document.getElementById("nome")
+.value
+.trim();
+
+let codigo=
+document.getElementById("codigo")
+.value
+.trim()
+.toUpperCase();
+
+if(nome===""){
+alert("Digite seu nome.");
+return;
+}
+
+if(codigo===""){
+alert("Digite o código da sala.");
+return;
+}
+
+nomes[jogadorAtual]=nome;
+
+sala=codigo;
+
+document.getElementById("salaAtual")
+.innerText=sala;
+
+document.getElementById("status")
+.innerText=
+"Entrando na sala "+sala+"...";
+
+localStorage.setItem(
+"truco_sala",
+sala
+);
+
+localStorage.setItem(
+"truco_nome",
+nome
+);
+
+entrarNoJogo();
+
+}
+
+
+function entrarNoJogo(){
+
+document.getElementById("menu")
+.style.display="none";
+
+document.getElementById("jogo")
+.style.display="block";
+
+desenharNomes();
+
+}
+
+
+function desenharNomes(){
+
+for(let i=0;i<4;i++){
+
+document.getElementById(
+"nome"+(i+1)
+).innerText=
+nomes[i];
+
+}
+
+}
+
+
+function iniciarPartida(){
+
+partida=true;
+
+valor=1;
+
+vez=0;
+
+pontos=[
+0,
+0
+];
+
+distribuirCartas();
+
+document.getElementById("mensagem")
+.innerText=
+"Partida iniciada!";
+
+renderizar();
+
+}
+
+
+function distribuirCartas(){
+
+let baralho=
+criarBaralho();
+
+cartasJogadores=[
+[],
+[],
+[],
+[]
+];
+
+for(let rodada=0;rodada<3;rodada++){
+
+for(let jogador=0;jogador<4;jogador++){
+
+cartasJogadores[jogador]
+.push(
+baralho.pop()
+);
+
+}
+
+}
+
+cartasMesa=[];
+
+}
+
+
+function renderizar(){
+
+document.getElementById("pontos1")
+.innerText=
+pontos[0];
+
+document.getElementById("pontos2")
+.innerText=
+pontos[1];
+
+document.getElementById("valor")
+.innerText=
+valor;
+
+document.getElementById("vez")
+.innerText=
+nomes[vez];
+
+for(let jogador=0;jogador<4;jogador++){
+
+let elemento=
+document.getElementById(
+"cartas"+(jogador+1)
+);
+
+elemento.innerHTML="";
+
+for(
+let i=0;
+i<cartasJogadores[jogador].length;
+i++
+){
+
+let carta=
+document.createElement("div");
+
+carta.className="carta";
+
+if(jogador===jogadorAtual){
+
+carta.innerText=
+cartasJogadores[jogador][i];
+
+carta.onclick=
+function(){
+
+jogarCarta(i);
+
+};
+
+}else{
+
+carta.classList.add("verso");
+
+carta.innerText="🂠";
+
+}
+
+elemento.appendChild(carta);
+
+}
+
+}
+
+
+let mesa=
+document.getElementById(
+"mesaCartas"
+);
+
+mesa.innerHTML="";
+
+for(let carta of cartasMesa){
+
+let elemento=
+document.createElement("div");
+
+elemento.className="carta";
+
+elemento.innerText=
+carta.carta;
+
+mesa.appendChild(elemento);
+
+}
+
+}
+
+
+function jogarCarta(indice){
+
+if(!partida){
+
+return;
+
+}
+
+if(vez!==jogadorAtual){
+
+document.getElementById("mensagem")
+.innerText=
+"Não é sua vez!";
+
+return;
+
+}
+
+let carta=
+cartasJogadores[
+jogadorAtual
+].splice(
+indice,
+1
+)[0];
+
+cartasMesa.push({
+
+jogador:jogadorAtual,
+
+carta:carta
+
+});
+
+vez=
+(vez+1)%4;
+
+document.getElementById("mensagem")
+.innerText=
+nomes[vez]+
+", é sua vez.";
+
+renderizar();
+
+if(cartasMesa.length===4){
+
+setTimeout(
+resolverRodada,
+1500
+);
+
+}
+
+}
+
+
+function resolverRodada(){
+
+let vencedor=
+cartasMesa[0].jogador;
+
+pontos[
+vencedor%2
+]+=valor;
+
+document.getElementById("mensagem")
+.innerText=
+nomes[vencedor]+
+" ganhou a rodada!";
+
+cartasMesa=[];
+
+vez=vencedor;
+
+renderizar();
+
+}
+
+
+function truco(){
+
+if(!partida){
+
+return;
+
+}
+
+if(valor===1){
+
+valor=3;
+
+}else if(valor===3){
+
+valor=6;
+
+}else if(valor===6){
+
+valor=9;
+
+}else if(valor===9){
+
+valor=12;
+
+}else{
+
+valor=12;
+
+}
+
+document.getElementById("mensagem")
+.innerText=
+"🔥 TRUCO! Valor: "+
+valor;
+
+renderizar();
+
+}
+
+
+function novaRodada(){
+
+if(pontos[0]>=12 ||
+pontos[1]>=12){
+
+alert(
+"Fim da partida!"
+);
+
+return;
+
+}
+
+valor=1;
+
+vez=0;
+
+distribuirCartas();
+
+partida=true;
+
+renderizar();
+
+}
+
+
+function copiarLink(){
+
+let campo=
+document.getElementById("link");
+
+campo.select();
+
+navigator.clipboard.writeText(
+campo.value
+);
+
+alert(
+"Link copiado!"
+);
+
+}
+
+
+window.onload=function(){
+
+let parametros=
+new URLSearchParams(
+window.location.search
+);
+
+let salaURL=
+parametros.get("sala");
+
+if(salaURL){
+
+document.getElementById("codigo")
+.value=
+salaURL
+.toUpperCase();
+
+}
+
+};
+
+</script>
+
+</body>
+</html>
